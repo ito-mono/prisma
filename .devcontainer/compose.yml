@@ -1,0 +1,12 @@
+services:
+  app:
+    env_file:
+      - .env
+    build:
+      context: .
+      dockerfile: Dockerfile.bun
+      args:
+        http_proxy: ${http_proxy}
+    tty: true
+    volumes:
+      - ../:/home/user/app

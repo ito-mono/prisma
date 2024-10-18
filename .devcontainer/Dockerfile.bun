@@ -1,0 +1,39 @@
+FROM debian:bullseye-slim
+
+# Catoの証明書を追加
+COPY Cato_Networks.crt /usr/local/share/ca-certificates/Cato_Networks.crt
+
+# Proxyの設定
+ARG http_proxy
+ENV http_proxy ${http_proxy}
+ENV HTTP_PROXY ${http_proxy}
+ENV https_proxy ${http_proxy}
+ENV HTTPS_PROXY ${http_proxy}
+
+RUN apt-get update && apt-get install -y \
+  curl \
+  zip \
+  unzip \
+  # vim \
+  git \
+  # sudo \
+  ca-certificates \
+  && update-ca-certificates \
+  && apt-get clean \
+  && rm -rf /var/lib/apt/lists/*
+
+# sudo権限を持つユーザーを追加
+ARG USERNAME=user
+ARG USER_UID=1000
+ARG USER_GID=$USER_UID
+
+RUN groupadd --gid $USER_GID $USERNAME \
+  && useradd -s /bin/bash --uid $USER_UID --gid $USER_GID -m $USERNAME
+  # && echo "$USERNAME ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/$USERNAME \
+  # && chmod 0440 /etc/sudoers.d/$USERNAME
+
+# デフォルトユーザーをnon-root-userに
+USER $USERNAME
+
+# ユーザーを切り替えた後にbunのインストール
+RUN curl -fsSL https://bun.sh/install | bash
